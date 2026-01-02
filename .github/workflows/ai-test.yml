@@ -15,12 +15,7 @@ jobs:
           npm install -g playwright
           npx playwright install --with-deps chromium
           pip install mcp-agent
-      - name: Run AI Agent
+      - name: Run AI Regression
         env:
           GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          # We use 'dev' to start an agentic session and pass the mission.txt as a prompt
-          mcp-agent dev \
-            --model "gemini-1.5-flash" \
-            --mcp-server "npx -y @playwright/mcp" \
-            "Read the file mission.txt and execute the instructions inside it using Playwright."
+        run: python runner.py
