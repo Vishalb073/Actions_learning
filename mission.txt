@@ -1,0 +1,3 @@
+- Go to https://www.google.com
+- Verify the search box is present.
+- Search for 'MCP Servers' and verify results appear.
