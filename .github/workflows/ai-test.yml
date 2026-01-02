@@ -19,10 +19,10 @@ jobs:
 
       - name: Install AI Tools & Playwright
         run: |
-          # 1. Install the agent with Google Gemini support
+          # Install the agent with Google Gemini support
           pip install "mcp-agent[google]"
           
-          # 2. Install Playwright (only once)
+          # Install Playwright and browser dependencies
           npm install -g playwright
           npx playwright install --with-deps chromium
 
@@ -30,3 +30,13 @@ jobs:
         env:
           GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py
+
+      - name: Upload Screenshots
+        # Use 'always()' so screenshots upload even if the test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-evidence
+          # Path where Playwright MCP saves images by default
+          path: .playwright-mcp/
+          retention-days: 7
