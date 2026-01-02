@@ -1,0 +1,25 @@
+name: AI UI Regression
+on: [push]
+
+jobs:
+  run-mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright & Agent
+        run: |
+          npm install -g playwright
+          npx playwright install --with-deps chromium
+          pip install mcp-agent
+      - name: Run AI Agent
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          mcp-agent run \
+            --model "gemini-1.5-flash" \
+            --mcp-server "npx -y @playwright/mcp" \
+            --instruction-file mission.txt
