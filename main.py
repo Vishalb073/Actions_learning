@@ -14,6 +14,8 @@ async def main():
             "You are a QA Engineer. Use your browser tools to execute the steps "
             "provided in the mission. DO NOT just describe them; execute them. "
             "Always take a screenshot at the end of the mission."
+            "IMPORTANT: After each step, take a screenshot and save it as "
+            "'screenshots/step_name.png'. Ensure the 'screenshots' folder exists."
         ),
         servers={
             "playwright": {
