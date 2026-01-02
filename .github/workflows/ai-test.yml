@@ -19,7 +19,8 @@ jobs:
         env:
           GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          mcp-agent run \
+          # We use 'dev' to start an agentic session and pass the mission.txt as a prompt
+          mcp-agent dev \
             --model "gemini-1.5-flash" \
             --mcp-server "npx -y @playwright/mcp" \
-            --instruction-file mission.txt
+            "Read the file mission.txt and execute the instructions inside it using Playwright."
