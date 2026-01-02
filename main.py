@@ -1,50 +1,35 @@
 import asyncio
-import logging
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_google import GoogleAugmentedLLM
 
-# Enable debug logging to see tool calls in the GitHub console
-logging.basicConfig(level=logging.DEBUG)
-
 async def main():
-    server_config = {
-        "playwright": {
-            "command": "npx",
-            "args": ["-y", "@playwright/mcp@latest"]
-        }
-    }
-
+    # 1. Read the mission from your text file
     with open("mission.txt", "r") as f:
-        mission = f.read()
+        user_mission = f.read()
 
-    # Create the agent
+    # 2. Setup the Agent
     agent = Agent(
         name="QA_Agent",
         instruction=(
-            "You are a real browser automation agent. "
-            "You MUST use your tools for EVERY step. "
-            "If you cannot find a tool, stop and report an error. "
-            f"Mission: {mission}"
+            "You are a QA Engineer. Use your browser tools to execute the steps "
+            "provided in the mission. DO NOT just describe them; execute them. "
+            "Always take a screenshot at the end of the mission."
         ),
-        servers=server_config
+        servers={
+            "playwright": {
+                "command": "npx",
+                "args": ["-y", "@playwright/mcp@latest"]
+            }
+        }
     )
 
     llm = GoogleAugmentedLLM(agent=agent)
     
-    # DEBUG: List tools to ensure Playwright is actually connected
-    # This will print to your GitHub Actions log
-    print("--- Available Tools ---")
-    # Some versions use agent.list_tools(), others require checking the server context
-    # We will let the LLM verify this by asking it
+    # 3. Pass the file content to the AI
+    print(f"🚀 Starting mission from mission.txt...")
+    result = await llm.generate_str(user_mission)
     
-    print("🚀 Running Mission with Tool-Tracing...")
-    # Using a structured prompt to force tool usage
-    response = await llm.generate_str(
-        "List the tools you have access to, then execute the mission. "
-        "For every tool you call, describe the result you received from the browser."
-    )
-    
-    print(f"\n--- FINAL REPORT ---\n{response}")
+    print(f"\n--- FINAL REPORT ---\n{result}")
 
 if __name__ == "__main__":
     asyncio.run(main())
