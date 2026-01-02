@@ -1,4 +1,4 @@
-- Go to Open https://s2-www.orangehealth.dev/ 
+- Go to Open https://s2-www.orangehealth.dev/ and capture the dom and log all the links
 - Verify the search box is present.
 - Search for 'CBC, Check the price 
 - Use 'screenshot' to capture the search results page. 
