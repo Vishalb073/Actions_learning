@@ -1,38 +1,40 @@
 import asyncio
 import os
-from mcp_agent.app import MCPApp
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm_google import GoogleAugmentedLLM
 
 async def main():
-    # 1. Initialize the App
-    app = MCPApp(name="QA_Automation")
-
-    # 2. Define the Agent and tell it which server to use
-    # We define the server directly here for simplicity
-    playwright_server = {
+    # 1. Setup the Playwright Server configuration
+    # This tells the agent how to launch the 'browser hands'
+    server_config = {
         "playwright": {
             "command": "npx",
             "args": ["-y", "@playwright/mcp@latest"]
         }
     }
 
-    async with app:
-        # Create the agent
-        agent = Agent(
-            name="Playwright_Tester",
-            instruction=open("mission.txt").read(),
-            server_names=["playwright"]
-        )
+    # 2. Initialize the Agent directly
+    # We pass the mission.txt content as the main instruction
+    with open("mission.txt", "r") as f:
+        mission = f.read()
 
-        async with agent:
-            # Connect Gemini to the Agent
-            llm = await agent.attach_llm(GoogleAugmentedLLM)
-            
-            # Execute the mission
-            print("--- Starting Mission ---")
-            result = await llm.generate_str("Please execute the mission.txt instructions now.")
-            print(f"--- Mission Result ---\n{result}")
+    agent = Agent(
+        name="QA_Agent",
+        instruction=f"You are a QA specialist. Follow these steps: {mission}",
+        servers=server_config
+    )
+
+    # 3. Attach the Gemini Brain and Execute
+    # The library will automatically look for GOOGLE_API_KEY in the environment
+    print("🚀 Connecting to Gemini and starting browser...")
+    
+    # Using the direct initialization pattern
+    llm = GoogleAugmentedLLM(agent=agent)
+    
+    print("📝 Executing Mission...")
+    result = await llm.generate_str("Please start the playwright browser and follow the mission instructions.")
+    
+    print(f"\n--- MISSION RESULT ---\n{result}")
 
 if __name__ == "__main__":
     asyncio.run(main())
