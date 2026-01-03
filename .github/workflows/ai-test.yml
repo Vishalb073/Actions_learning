@@ -1,8 +1,8 @@
-name: AI UI Regression (Browser-Use)
+name: AI UI Regression (Browser-Use Cloud)
 on: [push]
 
 jobs:
-  run-mcp:
+  run-browser-use:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,22 +14,22 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install browser-use langchain-google-genai playwright
+          pip install browser-use playwright
           playwright install-deps chromium
           playwright install chromium
           sudo apt-get install -y xvfb
 
       - name: Run AI Regression
         env:
-          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        # Still use xvfb-run to support 'headed' mode features in a headless environment
+          # Use the secret you added to your repository settings
+          BROWSER_USE_API_KEY: ${{ secrets.BROWSER_USE_API_KEY }}
         run: xvfb-run python main.py
 
       - name: Upload Evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-use-results
+          name: regression-results
           path: |
             ./*.png
             ./agent_history.json
