@@ -1,4 +1,4 @@
-name: AI UI Regression
+name: AI UI Regression (Browser-Use)
 on: [push]
 
 jobs:
@@ -7,39 +7,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install AI Tools & Playwright
+      - name: Install Dependencies
         run: |
-          pip install "mcp-agent[google]"
-          npm install -g playwright
-          # Install OS-level dependencies for the browser
-          npx playwright install-deps chromium
-          npx playwright install chromium
-          # Install xvfb for virtual display support
+          pip install browser-use langchain-google-genai playwright
+          playwright install-deps chromium
+          playwright install chromium
           sudo apt-get install -y xvfb
 
       - name: Run AI Regression
         env:
           GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        # We wrap the command in xvfb-run to simulate a 'Headed' environment
+        # Still use xvfb-run to support 'headed' mode features in a headless environment
         run: xvfb-run python main.py
 
-      - name: Upload Regression Evidence
+      - name: Upload Evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: regression-evidence
-          # This captures screenshots from the default folder AND the root
+          name: browser-use-results
           path: |
-            .playwright-mcp/*.png
             ./*.png
-          retention-days: 7
+            ./agent_history.json
