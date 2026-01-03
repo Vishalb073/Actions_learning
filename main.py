@@ -1,37 +1,44 @@
 import asyncio
-from mcp_agent.agents.agent import Agent
-from mcp_agent.workflows.llm.augmented_llm_google import GoogleAugmentedLLM
+import sys
+from browser_use import Agent
+from langchain_google_genai import ChatGoogleGenerativeAI
+from pydantic import SecretStr
+import os
 
 async def main():
-    # 1. Read the mission from your text file
-    with open("mission.txt", "r") as f:
-        user_mission = f.read()
-
-    # 2. Setup the Agent
-    agent = Agent(
-        name="QA_Agent",
-        instruction=(
-            "You are a QA Engineer. Use your browser tools to execute the steps "
-            "provided in the mission. DO NOT just describe them; execute them. "
-            "Always take a screenshot at the end of the mission."
-            "IMPORTANT: After each step, take a screenshot and save it as "
-            "'screenshots/step_name.png'. Ensure the 'screenshots' folder exists."
-        ),
-        servers={
-            "playwright": {
-                "command": "npx",
-                "args": ["-y", "@playwright/mcp@latest"]
-            }
-        }
+    # 1. Setup the Gemini Vision Model
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-flash",
+        google_api_key=SecretStr(os.getenv("GOOGLE_API_KEY"))
     )
 
-    llm = GoogleAugmentedLLM(agent=agent)
+    # 2. Define the Agent and the Mission
+    mission = (
+        "Go to https://s2-www.orangehealth.dev/. "
+        "1. Find and log all unique links on the homepage. "
+        "2. Search for 'CBC' in the search box. "
+        "3. Find the price for 'CBC'. "
+        "4. If you cannot find the search box or the price, explicitly say 'MISSION_FAILED'. "
+        "Take a screenshot of the results."
+    )
+
+    agent = Agent(
+        task=mission,
+        llm=llm,
+    )
+
+    # 3. Run the mission
+    history = await agent.run()
     
-    # 3. Pass the file content to the AI
-    print(f"🚀 Starting mission from mission.txt...")
-    result = await llm.generate_str(user_mission)
+    # 4. Check for Failure
+    final_result = history.final_result()
+    print(f"Final Report: {final_result}")
+
+    if "MISSION_FAILED" in final_result or not history.is_done():
+        print("❌ Regression Test Failed!")
+        sys.exit(1)
     
-    print(f"\n--- FINAL REPORT ---\n{result}")
+    print("✅ Regression Test Passed!")
 
 if __name__ == "__main__":
     asyncio.run(main())
