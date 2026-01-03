@@ -8,7 +8,14 @@ from browser_use.llm import ChatGoogle
 async def main():
     # Initialize the LLM using the browser-use wrapper
     # It will automatically look for the GOOGLE_API_KEY env var
-    llm = ChatGoogle(model='gemini-1.5-flash')
+  langchain_llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    google_api_key=os.getenv("GOOGLE_API_KEY")
+)
+
+# Pass it to browser-use
+# Note: Ensure you are using the latest version of browser-use
+llm = langchain_llm
 
     # Define the mission
     mission = (
