@@ -4,10 +4,16 @@ from browser_use import Agent
 async def main():
     agent = Agent(
         model="gpt-4.1-mini",
-        task="Open https://s2-www.orangehealth.dev/  "
-             "search for body check ups and add full body checkup in cart and validate pricing also add new random phone number , "
-             "add otp 3291 and customer details if it is asking and give me dom snapshots so that i can validate dom"
-
+        task = """
+                1. Navigate to https://s2-www.orangehealth.dev/
+                2. ASSERTION: Check if the search input with placeholder 'Search for tests' is visible. 
+                   If not found, stop immediately and report 'FAILURE: Search box missing'.
+                3. Search for 'CBC'.
+                4. ASSERTION: Verify that at least one search result contains the text 'CBC'. 
+                   If no results appear, report 'FAILURE: No search results for CBC'.
+                5. Extract the price. 
+                   If the price is greater than 1000, report 'FAILURE: Price too high'.
+                """
 
     )
 
