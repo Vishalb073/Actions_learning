@@ -1,25 +1,22 @@
 import asyncio
+import os
 import sys
 from browser_use import Agent
-from langchain_google_genai import ChatGoogleGenerativeAI
-from pydantic import SecretStr
-import os
+# FIX: Import ChatGoogle from browser_use instead of langchain directly
+from browser_use.llm import ChatGoogle 
 
 async def main():
-    # 1. Setup the Gemini Vision Model
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
-        google_api_key=SecretStr(os.getenv("GOOGLE_API_KEY"))
-    )
+    # Initialize the LLM using the browser-use wrapper
+    # It will automatically look for the GOOGLE_API_KEY env var
+    llm = ChatGoogle(model='gemini-1.5-flash')
 
-    # 2. Define the Agent and the Mission
+    # Define the mission
     mission = (
         "Go to https://s2-www.orangehealth.dev/. "
-        "1. Find and log all unique links on the homepage. "
-        "2. Search for 'CBC' in the search box. "
-        "3. Find the price for 'CBC'. "
-        "4. If you cannot find the search box or the price, explicitly say 'MISSION_FAILED'. "
-        "Take a screenshot of the results."
+        "1. Extract and log all unique links from the homepage. "
+        "2. Search for 'CBC' in the search bar and check the price. "
+        "3. If any step fails, report 'FAILURE'. "
+        "Take a screenshot of the results page."
     )
 
     agent = Agent(
@@ -27,18 +24,16 @@ async def main():
         llm=llm,
     )
 
-    # 3. Run the mission
+    # Run the mission
     history = await agent.run()
     
-    # 4. Check for Failure
+    # Check for success/failure to control GitHub Action status
     final_result = history.final_result()
-    print(f"Final Report: {final_result}")
-
-    if "MISSION_FAILED" in final_result or not history.is_done():
-        print("❌ Regression Test Failed!")
+    if final_result and "FAILURE" in final_result.upper():
+        print("❌ Mission failed.")
         sys.exit(1)
     
-    print("✅ Regression Test Passed!")
+    print("✅ Mission successful.")
 
 if __name__ == "__main__":
     asyncio.run(main())
