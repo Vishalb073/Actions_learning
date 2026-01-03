@@ -19,24 +19,27 @@ jobs:
 
       - name: Install AI Tools & Playwright
         run: |
-          # Install the agent with Google Gemini support
           pip install "mcp-agent[google]"
-          
-          # Install Playwright and browser dependencies
           npm install -g playwright
-          npx playwright install --with-deps chromium
+          # Install OS-level dependencies for the browser
+          npx playwright install-deps chromium
+          npx playwright install chromium
+          # Install xvfb for virtual display support
+          sudo apt-get install -y xvfb
 
       - name: Run AI Regression
         env:
           GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python main.py
+        # We wrap the command in xvfb-run to simulate a 'Headed' environment
+        run: xvfb-run python main.py
 
-      - name: Upload Screenshots
-        # Use 'always()' so screenshots upload even if the test fails
+      - name: Upload Regression Evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: regression-evidence
-          # Path where Playwright MCP saves images by default
-          path: .playwright-mcp/
+          # This captures screenshots from the default folder AND the root
+          path: |
+            .playwright-mcp/*.png
+            ./*.png
           retention-days: 7
