@@ -6,6 +6,7 @@ async def main():
         model="gpt-4.1-mini",
         task = """
                 1. Navigate to https://s2-www.orangehealth.dev/
+                2. Log me dom
                 2. ASSERTION: Check if the search input with placeholder 'Search for tests' is visible. 
                    If not found, stop immediately and report 'FAILURE: Search box missing'.
                 3. Search for 'CBC'.
